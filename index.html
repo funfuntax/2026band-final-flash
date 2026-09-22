@@ -30,21 +30,19 @@
   .date { font-size: 12px; color: #94a3b8; }
   .subtopic { font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-top: 4px; }
 
-  .card-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .card-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
   .card {
     background: #ffffff;
-    border: 0.5px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
+    border: 1px solid #dde3ec;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
   }
   .card.starred { background: #fef3c7; border-color: #fcd34d; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .card-origin { font-size: 13px; font-weight: 700; color: #2563eb; }
   .card-body { flex: 1; min-width: 0; }
-  .card-text { font-size: 14px; line-height: 1.7; color: #1e293b; }
-  .card-origin { font-size: 11px; color: #94a3b8; margin-top: 8px; }
+  .card-text { font-size: 16px; font-weight: 600; line-height: 1.65; color: #1e293b; }
 
   .star-btn {
     flex-shrink: 0;
@@ -63,7 +61,8 @@
     color: #dc2626;
     padding: 2px 8px;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
     vertical-align: 1px;
   }
@@ -135,12 +134,13 @@
   </div>
 
   <div id="archiveScreen">
-    <div class="archive-header">
-      <button class="back-btn" onclick="closeArchive()">← 오늘의 지문으로</button>
-    </div>
     <div class="archive-title" style="text-align:center; margin-bottom:14px;">이전 지문 모아보기</div>
     <div class="subject-tabs" id="subjectTabs"></div>
     <div id="prevCardList"></div>
+    <div class="footer-actions" style="margin-top:16px;">
+      <button class="footer-btn" onclick="closeArchive()">← 오늘의 지문으로</button>
+      <button class="footer-btn" onclick="resetArchive()">다시 풀어보기</button>
+    </div>
   </div>
 
 </div>
@@ -200,11 +200,11 @@ function cardHTML(date, idx, card, onStarClick) {
   const starred = isStarred(date, idx);
   return `
     <div class="card ${starred ? "starred" : ""}">
-      <div class="card-body">
-        <div class="card-text">${card.text}</div>
-        <div class="card-origin">${card.origin}</div>
+      <div class="card-top">
+        <span class="card-origin">${card.origin}</span>
+        <span class="star-btn" onclick="${onStarClick}">${starred ? "★" : "☆"}</span>
       </div>
-      <span class="star-btn" onclick="${onStarClick}">${starred ? "★" : "☆"}</span>
+      <div class="card-text">${card.text}</div>
     </div>
   `;
 }
@@ -259,6 +259,7 @@ function renderArchive() {
   `).join("");
 
   const entries = past.filter(h => h.subject === activeSubject);
+  const totalCards = entries.reduce((sum, h) => sum + h.cards.length, 0);
 
   let html = "";
   let count = 0;
@@ -271,7 +272,7 @@ function renderArchive() {
           ${cardHTML(h.date, idx, c, `toggleStarAndRerender('${h.date}', ${idx}, renderArchive)`)}
         </div>
       `;
-      if (count % 5 === 0) {
+      if (count % 5 === 0 && count !== totalCards) {
         html += `
           <div style="text-align:center; margin: 6px 0 16px;">
             <button class="footer-btn" onclick="resetArchive()">다시 풀어보기</button>
