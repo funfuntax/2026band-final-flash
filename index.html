@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>band-final-flash</title>
+<style>
+  * { box-sizing: border-box; }
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    background: #f4f6fa;
+    color: #1e293b;
+  }
+  .wrap { max-width: 440px; margin: 0 auto; padding: 24px 18px 60px; }
+
+  .header { text-align: center; margin-bottom: 20px; }
+  .badge {
+    display: inline-block;
+    background: #eef3fb;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .date { font-size: 12px; color: #94a3b8; }
+  .subtopic { font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-top: 4px; }
+
+  .card-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .card {
+    background: #ffffff;
+    border: 0.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .card-text { font-size: 14px; line-height: 1.7; color: #1e293b; }
+  .card-origin { font-size: 11px; color: #94a3b8; margin-top: 8px; }
+
+  .blind-shield {
+    display: inline-block;
+    background: #eef3fb;
+    color: #2563eb;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    vertical-align: 1px;
+  }
+  .blind-shield .answer-text { display: none; }
+  .blind-shield.revealed { background: #e0f2fe; color: #0284c7; font-weight: 700; }
+  .blind-shield.revealed .answer-text { display: inline; }
+  .blind-shield.revealed .placeholder-text { display: none; }
+
+  .footer-msg { text-align: center; font-size: 13px; color: #64748b; margin: 22px 0; }
+
+  .prev-toggle-wrap { text-align: center; border-top: 0.5px solid #e2e8f0; padding-top: 14px; }
+  .prev-toggle-btn {
+    background: #fff;
+    border: 0.5px solid #cbd5e1;
+    color: #475569;
+    font-size: 13px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+
+  #prevSection { display: none; margin-top: 18px; }
+  .subject-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
+  .subject-tab {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    border: 0.5px solid #cbd5e1;
+    color: #64748b;
+    background: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .subject-tab.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+
+  .prev-card {
+    background: #ffffff;
+    border: 0.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .prev-card.starred { background: #fef3c7; border-color: #fcd34d; }
+  .star-btn {
+    flex-shrink: 0; font-size: 17px; cursor: pointer; margin-top: 1px;
+    color: #cbd5e1;
+  }
+  .prev-card.starred .star-btn { color: #d97706; }
+  .prev-card-text { font-size: 13px; line-height: 1.6; color: #1e293b; }
+  .prev-card-meta { font-size: 11px; color: #94a3b8; margin-top: 6px; }
+
+  .empty-prev { text-align: center; font-size: 13px; color: #94a3b8; padding: 20px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="badge" id="subjectBadge"></div>
+    <div class="date" id="dateLabel"></div>
+    <div class="subtopic" id="subtopicLabel"></div>
+  </div>
+
+  <div class="card-list" id="cardList"></div>
+
+  <div class="footer-msg">가볍게 오늘 지문 읽고, 내일 또 만나요 🙂</div>
+
+  <div class="prev-toggle-wrap">
+    <button class="prev-toggle-btn" onclick="togglePrev()">이전 지문 모아보기</button>
+  </div>
+
+  <div id="prevSection">
+    <div class="subject-tabs" id="subjectTabs"></div>
+    <div id="prevCardList"></div>
+  </div>
+
+</div>
+
+<script>
+/* ===========================================================
+   history: 하루에 한 개씩 새 항목을 배열 맨 뒤에 추가하세요.
+   가장 마지막(last) 항목이 "오늘의 지문"으로 표시됩니다.
+   =========================================================== */
+const history = [
+  {
+    date: "9월 21일",
+    subject: "양도소득세",
+    subtopic: "과세대상",
+    cards: [
+      { text: "전세권은 부동산에 관한 권리로서 양도소득세 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>과세대상</span></span>이다.", origin: "과세대상 자산의 범위 판단 · 34회" },
+      { text: "등기되지 않은 부동산임차권의 양도는 부동산임차권이 '등기된' 경우에만 과세되므로, 양도소득세 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>과세대상이 아니다</span></span>.", origin: "과세대상 자산의 범위 판단 · 34회" },
+      { text: "사업에 사용하는 토지 및 건물과 함께 양도하는 영업권은 양도소득세 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>과세대상</span></span>이다.", origin: "과세대상 자산의 범위 판단 · 34회" },
+      { text: "토지 및 건물과 함께 양도하는 이축권은 그 가액을 대통령령으로 정하는 방법에 따라 별도로 평가하여 신고하는 경우, 양도소득이 아니라 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>'기타소득'으로 분리 과세되어 양도소득세 과세대상에서 제외</span></span>된다.", origin: "과세대상 자산의 범위 판단 · 34회" },
+      { text: "무상이전에 따라 자산의 소유권이 변경된 경우에는 양도소득세 과세대상이 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>되지 아니한다</span></span>(양도란 유상이전을 말함).", origin: "과세대상 자산의 범위 판단 · 28회" }
+    ]
+  },
+  {
+    date: "9월 22일",
+    subject: "양도소득세",
+    subtopic: "계산구조",
+    cards: [
+      { text: "국외자산의 양도에 대한 양도소득이 있는 거주자는 양도소득 기본공제(연 250만원)는 적용받을 수 있으나, 물가상승분을 반영하는 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>장기보유특별공제는 적용받을 수 없다</span></span>.", origin: "국외자산 양도의 계산 특례 · 35회" },
+      { text: "국외 부동산을 양도하여 발생한 양도차손은, 소득의 원천과 과세체계가 분리되어 있어 동일한 과세기간에 국내 부동산 양도소득금액에서 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>통산할 수 없다</span></span>.", origin: "국외자산 양도의 계산 특례 · 35회" },
+      { text: "국외 양도자산이 부동산임차권인 경우, 국내와 달리 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>등기 여부와 관계없이</span></span> 양도소득세가 과세된다.", origin: "국외자산 양도의 계산 특례 · 35회" },
+      { text: "국외자산의 양도가액은 원칙적으로 양도 당시의 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>실지거래가액</span></span>으로 하며, 확인할 수 없는 경우 소재국의 시가, 시가 산정이 어려우면 대통령령이 정하는 방법에 따른다.", origin: "국외자산 양도의 계산 특례 · 35회" },
+      { text: "국외 양도자산이 양도 당시 거주자가 소유한 유일한 주택으로서 보유기간이 2년 이상인 경우에도, 국내 주거안정 제도인 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>1세대 1주택 비과세 규정을 적용받을 수 없다</span></span>.", origin: "국외자산 양도의 계산 특례 · 35회" }
+    ]
+  }
+];
+
+function reveal(el) {
+  el.classList.toggle("revealed");
+}
+
+function renderToday() {
+  const today = history[history.length - 1];
+  document.getElementById("subjectBadge").textContent = today.subject;
+  document.getElementById("dateLabel").textContent = today.date;
+  document.getElementById("subtopicLabel").textContent = today.subtopic;
+
+  const listEl = document.getElementById("cardList");
+  listEl.innerHTML = today.cards.map(c => `
+    <div class="card">
+      <div class="card-text">${c.text}</div>
+      <div class="card-origin">${c.origin}</div>
+    </div>
+  `).join("");
+}
+
+function getStarKey(date, idx) {
+  return `band_flash_star_${date}_${idx}`;
+}
+
+function togglePrev() {
+  const section = document.getElementById("prevSection");
+  const show = section.style.display === "none";
+  section.style.display = show ? "block" : "none";
+  if (show) renderPrev();
+}
+
+let activeSubject = null;
+
+function renderPrev() {
+  const past = history.slice(0, -1); // 오늘 것 제외 전부
+
+  if (past.length === 0) {
+    document.getElementById("subjectTabs").innerHTML = "";
+    document.getElementById("prevCardList").innerHTML = `<div class="empty-prev">아직 쌓인 이전 지문이 없어요. 내일부터 하나씩 쌓일 예정이에요!</div>`;
+    return;
+  }
+
+  const subjects = [...new Set(past.map(h => h.subject))];
+  if (!activeSubject || !subjects.includes(activeSubject)) activeSubject = subjects[0];
+
+  document.getElementById("subjectTabs").innerHTML = subjects.map(s => `
+    <div class="subject-tab ${s === activeSubject ? "active" : ""}" onclick="selectSubject('${s}')">${s}</div>
+  `).join("");
+
+  const items = [];
+  past.filter(h => h.subject === activeSubject).forEach(h => {
+    h.cards.forEach((c, idx) => {
+      items.push({ date: h.date, subtopic: h.subtopic, ...c, cardIdx: idx });
+    });
+  });
+
+  document.getElementById("prevCardList").innerHTML = items.map(it => {
+    const key = getStarKey(it.date, it.cardIdx) + "_" + it.subtopic;
+    const starred = localStorage.getItem(key) === "1";
+    return `
+      <div class="prev-card ${starred ? "starred" : ""}" id="pc_${key}">
+        <span class="star-btn" onclick="toggleStar('${key}')">${starred ? "★" : "☆"}</span>
+        <div>
+          <div class="prev-card-text">${it.text}</div>
+          <div class="prev-card-meta">${it.subtopic} · ${it.date}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function selectSubject(s) {
+  activeSubject = s;
+  renderPrev();
+}
+
+function toggleStar(key) {
+  const cur = localStorage.getItem(key) === "1";
+  localStorage.setItem(key, cur ? "0" : "1");
+  renderPrev();
+}
+
+renderToday();
+</script>
+</body>
+</html>
