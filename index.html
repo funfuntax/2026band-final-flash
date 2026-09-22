@@ -159,14 +159,16 @@
 
 <script>
 /* ===========================================================
-   history: 하루에 한 개씩 새 항목을 배열 맨 뒤에 추가하세요.
-   가장 마지막(last) 항목이 "오늘의 지문"으로 표시됩니다.
+   * history: 며칠 분을 한꺼번에 미리 추가해둘 수 있습니다.
+   각 항목의 openAt(공개 시각, KST) 중 이미 지난 것들 중에서
+   가장 최근 것이 자동으로 "오늘의 지문"이 됩니다. *
    =========================================================== */
 const history = [
   {
-    date: "9월 21일",
-    subject: "양도소득세",
-    subtopic: "과세대상",
+  date: "9월 21일",
+  openAt: "2026-09-21T07:00:00+09:00",
+  subject: "양도소득세",
+  subtopic: "계산구조",
     cards: [
       { text: "전세권은 부동산에 관한 권리로서 양도소득세 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>과세대상</span></span>이다.", origin: "과세대상 자산의 범위 판단 · 34회" },
       { text: "등기되지 않은 부동산임차권의 양도는 부동산임차권이 '등기된' 경우에만 과세되므로, 양도소득세 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>과세대상이 아니다</span></span>.", origin: "과세대상 자산의 범위 판단 · 34회" },
@@ -177,6 +179,7 @@ const history = [
   },
   {
     date: "9월 22일",
+    openAt: "2026-09-22T07:00:00+09:00",
     subject: "양도소득세",
     subtopic: "계산구조",
     cards: [
@@ -189,6 +192,7 @@ const history = [
   },
     {
     date: "9월 23일",
+    openAt: "2026-09-23T07:00:00+09:00",
     subject: "양도소득세",
     subtopic: "계산구조",
     cards: [
@@ -232,9 +236,24 @@ function cardHTML(date, idx, card, onStarClick) {
     </div>
   `;
 }
-
+function getOpenedEntries() {
+  const now = new Date();
+  return history
+    .filter(h => new Date(h.openAt) <= now)
+    .sort((a, b) => new Date(a.openAt) - new Date(b.openAt));
+}
 function renderToday() {
-  const today = history[history.length - 1];
+  const opened = getOpenedEntries();
+
+  if (opened.length === 0) {
+    document.getElementById("subjectBadge").textContent = "";
+    document.getElementById("dateLabel").textContent = "";
+    document.getElementById("subtopicLabel").textContent = "오늘의 지문이 준비 중이에요";
+    document.getElementById("cardList").innerHTML = "";
+    return;
+  }
+
+  const today = opened[opened.length - 1];
   document.getElementById("subjectBadge").textContent = today.subject;
   document.getElementById("dateLabel").textContent = today.date;
   document.getElementById("subtopicLabel").textContent = today.subtopic;
@@ -267,7 +286,8 @@ function closeArchive() {
 let activeSubject = null;
 
 function renderArchive() {
-  const past = history.slice(0, -1); // 오늘 것 제외
+  const opened = getOpenedEntries();
+  const past = opened.slice(0, -1); // 오늘 것 제외
   const subjects = [...new Set(past.map(h => h.subject))];
 
   if (subjects.length === 0) {
