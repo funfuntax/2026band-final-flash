@@ -36,14 +36,31 @@
     border: 0.5px solid #e2e8f0;
     border-radius: 12px;
     padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
   }
+  .card.starred { background: #fef3c7; border-color: #fcd34d; }
+  .card-body { flex: 1; min-width: 0; }
   .card-text { font-size: 14px; line-height: 1.7; color: #1e293b; }
   .card-origin { font-size: 11px; color: #94a3b8; margin-top: 8px; }
 
+  .star-btn {
+    flex-shrink: 0;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    color: #cbd5e1;
+    margin-top: 1px;
+    user-select: none;
+  }
+  .card.starred .star-btn { color: #d97706; }
+
   .blind-shield {
     display: inline-block;
-    background: #eef3fb;
-    color: #2563eb;
+    background: #fee2e2;
+    color: #dc2626;
     padding: 2px 8px;
     border-radius: 6px;
     font-size: 12px;
@@ -57,18 +74,28 @@
 
   .footer-msg { text-align: center; font-size: 13px; color: #64748b; margin: 22px 0; }
 
-  .prev-toggle-wrap { text-align: center; border-top: 0.5px solid #e2e8f0; padding-top: 14px; }
-  .prev-toggle-btn {
+  .footer-actions {
+    display: flex; gap: 8px; justify-content: center;
+    border-top: 0.5px solid #e2e8f0; padding-top: 14px;
+  }
+  .footer-btn {
     background: #fff;
     border: 0.5px solid #cbd5e1;
     color: #475569;
     font-size: 13px;
-    padding: 9px 18px;
+    padding: 9px 16px;
     border-radius: 999px;
     cursor: pointer;
   }
 
-  #prevSection { display: none; margin-top: 18px; }
+  #archiveScreen { display: none; }
+  .archive-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .back-btn {
+    font-size: 13px; color: #475569; cursor: pointer;
+    background: none; border: none; padding: 4px 0;
+  }
+  .archive-title { font-size: 15px; font-weight: 700; color: #1e293b; }
+
   .subject-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
   .subject-tab {
     flex-shrink: 0;
@@ -83,44 +110,35 @@
   }
   .subject-tab.active { background: #2563eb; border-color: #2563eb; color: #fff; }
 
-  .prev-card {
-    background: #ffffff;
-    border: 0.5px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex; gap: 10px; align-items: flex-start;
-    margin-bottom: 8px;
-  }
-  .prev-card.starred { background: #fef3c7; border-color: #fcd34d; }
-  .star-btn {
-    flex-shrink: 0; font-size: 17px; cursor: pointer; margin-top: 1px;
-    color: #cbd5e1;
-  }
-  .prev-card.starred .star-btn { color: #d97706; }
-  .prev-card-text { font-size: 13px; line-height: 1.6; color: #1e293b; }
   .prev-card-meta { font-size: 11px; color: #94a3b8; margin-top: 6px; }
-
   .empty-prev { text-align: center; font-size: 13px; color: #94a3b8; padding: 20px 0; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="header">
-    <div class="badge" id="subjectBadge"></div>
-    <div class="date" id="dateLabel"></div>
-    <div class="subtopic" id="subtopicLabel"></div>
+  <div id="todayScreen">
+    <div class="header">
+      <div class="badge" id="subjectBadge"></div>
+      <div class="date" id="dateLabel"></div>
+      <div class="subtopic" id="subtopicLabel"></div>
+    </div>
+
+    <div class="card-list" id="cardList"></div>
+
+    <div class="footer-msg">가볍게 오늘 지문 읽고, 내일 또 만나요 🙂</div>
+
+    <div class="footer-actions">
+      <button class="footer-btn" onclick="openArchive()">이전 지문 모아보기</button>
+      <button class="footer-btn" onclick="resetToday()">다시 풀어보기</button>
+    </div>
   </div>
 
-  <div class="card-list" id="cardList"></div>
-
-  <div class="footer-msg">가볍게 오늘 지문 읽고, 내일 또 만나요 🙂</div>
-
-  <div class="prev-toggle-wrap">
-    <button class="prev-toggle-btn" onclick="togglePrev()">이전 지문 모아보기</button>
-  </div>
-
-  <div id="prevSection">
+  <div id="archiveScreen">
+    <div class="archive-header">
+      <button class="back-btn" onclick="closeArchive()">← 오늘의 지문으로</button>
+    </div>
+    <div class="archive-title" style="text-align:center; margin-bottom:14px;">이전 지문 모아보기</div>
     <div class="subject-tabs" id="subjectTabs"></div>
     <div id="prevCardList"></div>
   </div>
@@ -163,6 +181,34 @@ function reveal(el) {
   el.classList.toggle("revealed");
 }
 
+function getStarKey(date, idx) {
+  return `band_flash_star_${date}_${idx}`;
+}
+
+function isStarred(date, idx) {
+  return localStorage.getItem(getStarKey(date, idx)) === "1";
+}
+
+function toggleStarAndRerender(date, idx, rerenderFn) {
+  const key = getStarKey(date, idx);
+  const cur = localStorage.getItem(key) === "1";
+  localStorage.setItem(key, cur ? "0" : "1");
+  rerenderFn();
+}
+
+function cardHTML(date, idx, card, onStarClick) {
+  const starred = isStarred(date, idx);
+  return `
+    <div class="card ${starred ? "starred" : ""}">
+      <div class="card-body">
+        <div class="card-text">${card.text}</div>
+        <div class="card-origin">${card.origin}</div>
+      </div>
+      <span class="star-btn" onclick="${onStarClick}">${starred ? "★" : "☆"}</span>
+    </div>
+  `;
+}
+
 function renderToday() {
   const today = history[history.length - 1];
   document.getElementById("subjectBadge").textContent = today.subject;
@@ -170,74 +216,82 @@ function renderToday() {
   document.getElementById("subtopicLabel").textContent = today.subtopic;
 
   const listEl = document.getElementById("cardList");
-  listEl.innerHTML = today.cards.map(c => `
-    <div class="card">
-      <div class="card-text">${c.text}</div>
-      <div class="card-origin">${c.origin}</div>
-    </div>
-  `).join("");
+  listEl.innerHTML = today.cards.map((c, idx) =>
+    cardHTML(today.date, idx, c, `toggleStarAndRerender('${today.date}', ${idx}, renderToday)`)
+  ).join("");
 }
 
-function getStarKey(date, idx) {
-  return `band_flash_star_${date}_${idx}`;
+function resetToday() {
+  document.querySelectorAll("#cardList .blind-shield.revealed").forEach(el => {
+    el.classList.remove("revealed");
+  });
 }
 
-function togglePrev() {
-  const section = document.getElementById("prevSection");
-  const show = section.style.display === "none";
-  section.style.display = show ? "block" : "none";
-  if (show) renderPrev();
+function openArchive() {
+  document.getElementById("todayScreen").style.display = "none";
+  document.getElementById("archiveScreen").style.display = "block";
+  window.scrollTo(0, 0);
+  renderArchive();
+}
+
+function closeArchive() {
+  document.getElementById("archiveScreen").style.display = "none";
+  document.getElementById("todayScreen").style.display = "block";
+  window.scrollTo(0, 0);
 }
 
 let activeSubject = null;
 
-function renderPrev() {
-  const past = history.slice(0, -1); // 오늘 것 제외 전부
+function renderArchive() {
+  const past = history.slice(0, -1); // 오늘 것 제외
+  const subjects = [...new Set(past.map(h => h.subject))];
 
-  if (past.length === 0) {
+  if (subjects.length === 0) {
     document.getElementById("subjectTabs").innerHTML = "";
     document.getElementById("prevCardList").innerHTML = `<div class="empty-prev">아직 쌓인 이전 지문이 없어요. 내일부터 하나씩 쌓일 예정이에요!</div>`;
     return;
   }
 
-  const subjects = [...new Set(past.map(h => h.subject))];
   if (!activeSubject || !subjects.includes(activeSubject)) activeSubject = subjects[0];
 
   document.getElementById("subjectTabs").innerHTML = subjects.map(s => `
     <div class="subject-tab ${s === activeSubject ? "active" : ""}" onclick="selectSubject('${s}')">${s}</div>
   `).join("");
 
-  const items = [];
-  past.filter(h => h.subject === activeSubject).forEach(h => {
+  const entries = past.filter(h => h.subject === activeSubject);
+
+  let html = "";
+  let count = 0;
+  entries.forEach(h => {
+    html += `<div style="font-size:12px; color:#94a3b8; margin: 14px 0 8px; padding-left:2px;">${h.date} · ${h.subtopic}</div>`;
     h.cards.forEach((c, idx) => {
-      items.push({ date: h.date, subtopic: h.subtopic, ...c, cardIdx: idx });
+      count++;
+      html += `
+        <div style="margin-bottom:8px;">
+          ${cardHTML(h.date, idx, c, `toggleStarAndRerender('${h.date}', ${idx}, renderArchive)`)}
+        </div>
+      `;
+      if (count % 5 === 0) {
+        html += `
+          <div style="text-align:center; margin: 6px 0 16px;">
+            <button class="footer-btn" onclick="resetArchive()">다시 풀어보기</button>
+          </div>
+        `;
+      }
     });
   });
+  document.getElementById("prevCardList").innerHTML = html;
+}
 
-  document.getElementById("prevCardList").innerHTML = items.map(it => {
-    const key = getStarKey(it.date, it.cardIdx) + "_" + it.subtopic;
-    const starred = localStorage.getItem(key) === "1";
-    return `
-      <div class="prev-card ${starred ? "starred" : ""}" id="pc_${key}">
-        <span class="star-btn" onclick="toggleStar('${key}')">${starred ? "★" : "☆"}</span>
-        <div>
-          <div class="prev-card-text">${it.text}</div>
-          <div class="prev-card-meta">${it.subtopic} · ${it.date}</div>
-        </div>
-      </div>
-    `;
-  }).join("");
+function resetArchive() {
+  document.querySelectorAll("#prevCardList .blind-shield.revealed").forEach(el => {
+    el.classList.remove("revealed");
+  });
 }
 
 function selectSubject(s) {
   activeSubject = s;
-  renderPrev();
-}
-
-function toggleStar(key) {
-  const cur = localStorage.getItem(key) === "1";
-  localStorage.setItem(key, cur ? "0" : "1");
-  renderPrev();
+  renderArchive();
 }
 
 renderToday();
