@@ -123,6 +123,11 @@
 
   .prev-card-meta { font-size: 11px; color: #94a3b8; margin-top: 6px; }
   .empty-prev { text-align: center; font-size: 13px; color: #94a3b8; padding: 20px 0; }
+  .flash-table { width: 100%; border-collapse: collapse; font-size: 15px; font-weight: 400; margin-top: 6px; }
+  .flash-table th, .flash-table td { border: 1px solid #cbd5e1; padding: 9px 10px; vertical-align: middle; line-height: 1.5; word-break: keep-all; }
+  .flash-table thead th { background: #2563eb; color: #fff; text-align: center; font-weight: 700; font-size: 15px; }
+  .flash-table tbody th { background: #f1f5f9; width: 50%; text-align: left; font-weight: 600; color: #334155; }
+  .flash-table td { text-align: center; }
 </style>
 </head>
 <body>
@@ -208,9 +213,20 @@ const history = [
     openAt: "2026-09-24T08:00:00+09:00",
     subject: "양도소득세",
     subtopic: "이월과세 한눈에 보기",
-    cards: [
-      { text: "<div class='tbl-title'>📋 배우자·직계존비속 증여재산 이월과세</div><table class='flash-table'><tr><th>적용 요건</th><td>양도일부터 소급하여 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>10년</span></span> 이내에 배우자·직계존비속으로부터 증여받은 자산<br>※ 양도 당시 사망으로 혼인관계가 소멸된 배우자는 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>제외</span></span></td></tr><tr><th>납세의무자</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>수증자 단독</span></span> (증여자와 연대납세의무 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>없음</span></span>)</td></tr><tr><th>취득가액</th><td>증여 당시 시가가 아니라 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>당초 증여자의 취득가액</span></span></td></tr><tr><th>자본적지출액</th><td>증여자가 지출한 금액도 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>필요경비로 공제 가능</span></span></td></tr><tr><th>증여세</th><td>수증자가 낸 증여세는 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>양도차익을 한도로 필요경비 산입</span></span></td></tr><tr><th>보유기간<br>(장특공·세율)</th><td>수증일이 아니라 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>증여자의 당초 취득일</span></span>부터 기산</td></tr><tr><th>적용 배제</th><td>① 사업인정고시일부터 소급 2년 이전 증여 후 공익사업 수용 → 이월과세 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>적용 안 함</span></span><br>② 이월과세 적용 세액이 미적용 세액보다 <span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>큰 경우에만</span></span> 적용</td></tr></table>", origin: "이월과세의 취득가액·보유기간 산정 · 35회, 32회, 28회" }
-     ]
+       cards: [
+      { text: "<table class='flash-table'><thead><tr><th colspan='2'>📋 배우자·직계존비속 증여재산 이월과세</th></tr></thead><tbody>"
+        + "<tr><th>증여 후 양도까지 기간</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>10년 이내</span></span></td></tr>"
+        + "<tr><th>사망으로 혼인관계 소멸된 배우자</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>적용 제외</span></span></td></tr>"
+        + "<tr><th>납세의무자</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>수증자</span></span></td></tr>"
+        + "<tr><th>증여자와 연대납세의무</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>없음</span></span></td></tr>"
+        + "<tr><th>취득가액</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>증여자의 취득가액</span></span></td></tr>"
+        + "<tr><th>증여자가 지출한 자본적지출액</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>필요경비 공제 가능</span></span></td></tr>"
+        + "<tr><th>수증자가 낸 증여세</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>필요경비 산입</span></span></td></tr>"
+        + "<tr><th>보유기간 기산일<br>(장특공·세율)</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>증여자의 취득일</span></span></td></tr>"
+        + "<tr><th>사업인정고시일 소급 2년 이전 증여 후 수용</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>이월과세 적용 안 함</span></span></td></tr>"
+        + "<tr><th>이월과세 적용 세액 &lt; 미적용 세액</th><td><span class='blind-shield' onclick='reveal(this)'><span class='placeholder-text'>🔍 정답확인</span><span class='answer-text'>이월과세 적용 안 함</span></span></td></tr>"
+        + "</tbody></table>", origin: "이월과세의 취득가액·보유기간 산정 · 35회, 32회, 28회" }
+    ]
   }
 ];
 
@@ -349,6 +365,7 @@ function selectSubject(s) {
 }
 
 renderToday();
+
 </script>
 </body>
 </html>
