@@ -383,19 +383,23 @@ function renderArchive() {
     return;
   }
 
-  if (!activeSubject || !subjects.includes(activeSubject)) activeSubject = subjects[0];
+  const tabs = ["전체", ...subjects];
+  if (!activeSubject || !tabs.includes(activeSubject)) activeSubject = tabs[0];
 
-  document.getElementById("subjectTabs").innerHTML = subjects.map(s => `
+  document.getElementById("subjectTabs").innerHTML = tabs.map(s => `
     <div class="subject-tab ${s === activeSubject ? "active" : ""}" onclick="selectSubject('${s}')">${s}</div>
   `).join("");
 
-  const entries = past.filter(h => h.subject === activeSubject);
+  const entries = activeSubject === "전체"
+    ? past
+    : past.filter(h => h.subject === activeSubject);
   const totalCards = entries.reduce((sum, h) => sum + h.cards.length, 0);
 
   let html = "";
   let count = 0;
   entries.forEach(h => {
-    html += `<div style="font-size:12px; color:#94a3b8; margin: 14px 0 8px; padding-left:2px;">${h.date} · ${h.subtopic}</div>`;
+   const label = activeSubject === "전체" ? `${h.date} · ${h.subject} · ${h.subtopic}` : `${h.date} · ${h.subtopic}`;
+    html += `<div style="font-size:12px; color:#94a3b8; margin: 14px 0 8px; padding-left:2px;">${label}</div>`;
     h.cards.forEach((c, idx) => {
       count++;
       html += `
